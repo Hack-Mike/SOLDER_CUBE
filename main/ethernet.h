@@ -7,5 +7,8 @@
 
 #endif //CUBE_REFLOW_ETHERNET_H
 
-int ethernetSetup(void);
+void ethernetSetup(void);
 
+void ethernetStop(void);
+
+void ethernetStart(void);

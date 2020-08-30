@@ -14,6 +14,7 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_partition.h"
+#include "freertos/event_groups.h"
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
@@ -21,6 +22,9 @@
 #include "esp_tls.h"
 
 #include "driver/gpio.h"
+
+extern EventGroupHandle_t connectionEvent;
+extern EventBits_t connectionBits;
 
 void espSetup(void) {
 
@@ -44,8 +48,12 @@ void espSetup(void) {
         ret = nvs_flash_init();
     }
 
-
     ESP_ERROR_CHECK(ret);
+
+    connectionEvent = xEventGroupCreate();
+    if(connectionEvent != NULL) {
+        puts("Connection Event created!");
+    }
 
 
 

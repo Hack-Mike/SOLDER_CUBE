@@ -20,9 +20,14 @@
 #define ETH_MDC_GPIO 23
 #define ETH_MDIO_GPIO 18
 
-extern EventGroupHandle_t eth_event_group;
+EventGroupHandle_t eth_event_group;
 
-extern const int CONNECTED_BIT;
+extern EventGroupHandle_t connectionEvent;
+extern EventBits_t connectionBits;
+
+#define ETH_BIT (1UL << 0UL)
+
+esp_eth_handle_t eth_handle;
 
 static const char *TAG = "ETHERNET";
 
@@ -53,7 +58,6 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
 
         case ETHERNET_EVENT_STOP:
             ESP_LOGI(TAG, "Ethernet Stopped");
-            xEventGroupClearBits(eth_event_group, CONNECTED_BIT);
             break;
 
         default:
@@ -73,10 +77,11 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base, int32_t
     ESP_LOGI(TAG, "ETHMASK:" IPSTR, IP2STR(&ip_info->netmask));
     ESP_LOGI(TAG, "ETHGW:" IPSTR, IP2STR(&ip_info->gw));
     ESP_LOGI(TAG, "~~~~~~~~~~~");
-    xEventGroupSetBits(eth_event_group, CONNECTED_BIT);
+
 }
 
-int ethernetSetup() {
+void ethernetSetup() {
+
     tcpip_adapter_init();
 
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -100,15 +105,33 @@ int ethernetSetup() {
     esp_eth_phy_t *phy = esp_eth_phy_new_ip101(&phy_config);
 
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
-    esp_eth_handle_t eth_handle = NULL;
+    eth_handle = NULL;
+
     ESP_ERROR_CHECK(esp_eth_driver_install(&config, &eth_handle));
-    ESP_ERROR_CHECK(esp_eth_start(eth_handle));
+    //ESP_ERROR_CHECK(esp_eth_start(eth_handle));
 
-    puts("BP 1");
+}
 
-    //xEventGroupWaitBits(eth_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
+void ethernetStop(void) {
+    int err;
+    puts("Stopping Ethernet...");
+    err = esp_eth_stop(eth_handle);
 
-    puts("BP 2");
+    if(err == ESP_OK) {
+        puts("Ethernet stopped");
+    } else {
+        printf("Ethernet did not stop, error: %d\n", err);
+    }
+}
 
-    return 0;
+void ethernetStart(void) {
+    int err;
+    puts("Starting Ethernet...");
+    err = esp_eth_start(eth_handle);
+
+    if(err == ESP_OK) {
+        puts("Ethernet started");
+    } else {
+        printf("Ethernet did not start, error: %d\n", err);
+    }
 }
