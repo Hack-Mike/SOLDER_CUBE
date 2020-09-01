@@ -34,6 +34,23 @@ static EventGroupHandle_t s_wifi_event_group;
 
 static int s_retry_num = 0;
 
+static void displayBits(unsigned int value) {
+    unsigned int displayMask = 1 << 31;
+
+    printf("DEC to BIN %u = ", value);
+
+    for(unsigned int c = 1; c <= 32; ++c) {
+        putchar(value & displayMask ? '1' : '0');
+        //printf("%s", value & displayMask ? "1" : "0");
+        value <<= 1;
+
+        if(c % 8 == 0) {
+            printf(" ");
+        }
+    }
+    puts("");
+}
+
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data)
 {
@@ -62,7 +79,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 void wifi_init_sta() {
     s_wifi_event_group = xEventGroupCreate();
 
-    tcpip_adapter_init();
+    //tcpip_adapter_init();
 
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
@@ -80,9 +97,55 @@ void wifi_init_sta() {
     };
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
-    ESP_ERROR_CHECK(esp_wifi_start() );
+
+    uint8_t macAdd[8] = {0};
+    int err = esp_wifi_get_mac(WIFI_MODE_STA, *macAdd);
+
+    printf("Errore mac address: %d\n", err);
+
+    printf("MAC: ");
+    for(int i = 0; i < 8; i++) {
+        printf("%hhu ", macAdd[i]);
+    }
+
+    puts("");
+
+    //ESP_ERROR_CHECK(esp_wifi_start() );
 
     ESP_LOGI(stationTAG, "wifi_init_sta finished.");
+
+
+}
+
+void wifiStop(void) {
+
+    puts("Stopping Wi-Fi...");
+    esp_wifi_disconnect();
+    int err = esp_wifi_stop();
+
+    if(err == ESP_OK) {
+
+        puts("Wi-Fi stopped");
+    } else {
+
+        printf("Wi-Fi did not stop. Error: %d\n", err);
+    }
+}
+
+void wifiStart(void) {
+
+    puts("Starting Wi-Fi");
+
+    int err = esp_wifi_start();
+
+    if(err == ESP_OK) {
+
+        puts("Wi-Fi started");
+    } else {
+
+        printf("Wi-Fi did not start. Error: %d\n", err);
+    }
+
 
     /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
      * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
@@ -91,6 +154,8 @@ void wifi_init_sta() {
                                            pdFALSE,
                                            pdFALSE,
                                            portMAX_DELAY);
+
+    displayBits(bits);
 
     /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
      * happened. */
@@ -107,4 +172,16 @@ void wifi_init_sta() {
     ESP_ERROR_CHECK(esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler));
     ESP_ERROR_CHECK(esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler));
     vEventGroupDelete(s_wifi_event_group);
+
+    uint8_t macAdd[8] = {0};
+    int err2 = esp_wifi_get_mac(WIFI_MODE_STA, *macAdd);
+
+    printf("Errore mac address: %d\n", err2);
+
+    printf("MAC: ");
+    for(int i = 0; i < 8; i++) {
+        printf("%d ", macAdd[i]);
+    }
+
+    puts("");
 }

@@ -82,7 +82,7 @@ static void got_ip_event_handler(void *arg, esp_event_base_t event_base, int32_t
 
 void ethernetSetup() {
 
-    tcpip_adapter_init();
+    //tcpip_adapter_init();
 
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_ERROR_CHECK(tcpip_adapter_set_default_eth_handlers());

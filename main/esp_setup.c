@@ -14,6 +14,7 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_partition.h"
+#include "tcpip_adapter.h"
 #include "freertos/event_groups.h"
 
 #include "lwip/err.h"
@@ -26,6 +27,42 @@
 extern EventGroupHandle_t connectionEvent;
 extern EventBits_t connectionBits;
 
+char serialNumber[15];
+
+static int getSerialNumber(void) {
+
+    printf("Serial Number: %s\n", serialNumber);
+
+    uint8_t macAdd[6] = {0};
+
+    int err = esp_efuse_mac_get_default(macAdd);
+
+    printf("Base mac address error: %d\n", err);
+    printf("BASE MAC: ");
+    for(int i = 0; i < 6; i++) {
+        printf("%02x ", macAdd[i]);
+    }
+
+    puts("");
+
+    //create Serial Number String
+    for(size_t i = 0; i < 6; i++) {
+
+        char str[3];
+        itoa(macAdd[i], str, 16);
+
+        strcat(serialNumber, str);
+
+        if(i == 1 || i == 3) {
+            strcat(serialNumber, "-");
+        }
+    }
+
+    printf("Serial Number: %s\n", serialNumber);
+
+    return 1;
+}
+
 void espSetup(void) {
 
     /* Print chip information */
@@ -35,6 +72,8 @@ void espSetup(void) {
            chip_info.cores,
            (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
            (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
+
+
 
     printf("silicon revision %d, ", chip_info.revision);
 
@@ -50,11 +89,14 @@ void espSetup(void) {
 
     ESP_ERROR_CHECK(ret);
 
+    int err = getSerialNumber();
+
+    printf("err %d\n", err);
+
     connectionEvent = xEventGroupCreate();
     if(connectionEvent != NULL) {
         puts("Connection Event created!");
     }
 
-
-
+    tcpip_adapter_init();
 }

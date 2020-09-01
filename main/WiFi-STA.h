@@ -19,3 +19,7 @@
 static const char *stationTAG = "WI-FI STATION: ";
 
 void wifi_init_sta(void);
+
+void wifiStop(void);
+
+void wifiStart(void);

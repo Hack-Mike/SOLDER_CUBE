@@ -42,8 +42,10 @@ void connectionTask(void) {
 
         if(buttonBits & BUTTON_BIT_0) {
             ethernetStart();
+            wifiStop();
         } else if(buttonBits & BUTTON_BIT_1) {
             ethernetStop();
+            wifiStart();
         }
 
 
@@ -59,7 +61,7 @@ void app_main() {
     espSetup();
 
     ethernetSetup();
-    //wifi_init_sta();
+    wifi_init_sta();
 
     //xTaskCreate(ethernetSetup, "ETHERNET", 4000, NULL, 5, NULL);
     xTaskCreate(buttonTask, "BUTTON", 4000, NULL, 5, NULL);
