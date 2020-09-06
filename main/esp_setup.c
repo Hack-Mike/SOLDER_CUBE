@@ -3,6 +3,7 @@
 //
 
 #include "esp_setup.h"
+#include "solder_cube_error.h"
 
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -37,19 +38,31 @@ static int getSerialNumber(void) {
 
     int err = esp_efuse_mac_get_default(macAdd);
 
-    printf("Base mac address error: %d\n", err);
+    if(err != ESP_OK) {
+        return FAIL_GET_MAC;
+    }
+
+
     printf("BASE MAC: ");
     for(int i = 0; i < 6; i++) {
         printf("%02x ", macAdd[i]);
     }
-
     puts("");
 
     //create Serial Number String
     for(size_t i = 0; i < 6; i++) {
 
         char str[3];
-        itoa(macAdd[i], str, 16);
+        //itoa(macAdd[i], str, 16);
+        if(macAdd[i] <= 0x0f) {
+            char strTemp[3];
+            str[0] = '0';
+            str[1] = '\0';
+            sprintf(strTemp, "%x", macAdd[i]);
+            strcat(str, strTemp);
+        } else {
+            sprintf(str, "%x", macAdd[i]);
+        }
 
         strcat(serialNumber, str);
 
@@ -60,7 +73,7 @@ static int getSerialNumber(void) {
 
     printf("Serial Number: %s\n", serialNumber);
 
-    return 1;
+    return ESP_OK;
 }
 
 void espSetup(void) {
@@ -91,7 +104,9 @@ void espSetup(void) {
 
     int err = getSerialNumber();
 
-    printf("err %d\n", err);
+    if(err != ESP_OK) {
+        printf("Failed to get serial number. Err: %d\n", err);
+    }
 
     connectionEvent = xEventGroupCreate();
     if(connectionEvent != NULL) {

@@ -5,3 +5,8 @@ cmake_minimum_required(VERSION 3.5)
 
 include(/Users/michelemocellin/esp/esp-idf-v4.0.1/tools/cmake/project.cmake)
 project(SOLDER_CUBE C CXX ASM)
+
+
+
+
+

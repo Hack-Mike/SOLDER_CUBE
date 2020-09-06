@@ -23,6 +23,14 @@
 #include "WiFi-STA.h"
 #include "ethernet.h"
 #include "button.h"
+#include "JsonUtility.hpp"
+
+
+
+
+
+
+
 
 EventGroupHandle_t connectionEvent = NULL;
 EventBits_t connectionBits = 0;
@@ -33,6 +41,7 @@ extern EventBits_t buttonBits;
 #define ETH_BIT (1UL << 0UL)
 
 void connectionTask(void) {
+
 
     while(1) {
 
@@ -62,6 +71,9 @@ void app_main() {
 
     ethernetSetup();
     wifi_init_sta();
+
+    jsonFunction();
+
 
     //xTaskCreate(ethernetSetup, "ETHERNET", 4000, NULL, 5, NULL);
     xTaskCreate(buttonTask, "BUTTON", 4000, NULL, 5, NULL);

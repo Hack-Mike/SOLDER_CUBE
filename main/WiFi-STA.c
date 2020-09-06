@@ -86,8 +86,7 @@ void wifi_init_sta() {
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
+
 
     wifi_config_t wifi_config = {
             .sta = {
@@ -97,18 +96,6 @@ void wifi_init_sta() {
     };
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
-
-    uint8_t macAdd[8] = {0};
-    int err = esp_wifi_get_mac(WIFI_MODE_STA, *macAdd);
-
-    printf("Errore mac address: %d\n", err);
-
-    printf("MAC: ");
-    for(int i = 0; i < 8; i++) {
-        printf("%hhu ", macAdd[i]);
-    }
-
-    puts("");
 
     //ESP_ERROR_CHECK(esp_wifi_start() );
 
@@ -120,7 +107,7 @@ void wifi_init_sta() {
 void wifiStop(void) {
 
     puts("Stopping Wi-Fi...");
-    esp_wifi_disconnect();
+    //esp_wifi_disconnect();
     int err = esp_wifi_stop();
 
     if(err == ESP_OK) {
@@ -135,6 +122,9 @@ void wifiStop(void) {
 void wifiStart(void) {
 
     puts("Starting Wi-Fi");
+
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
 
     int err = esp_wifi_start();
 
@@ -151,7 +141,7 @@ void wifiStart(void) {
      * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
                                            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
-                                           pdFALSE,
+                                           pdTRUE,
                                            pdFALSE,
                                            portMAX_DELAY);
 
@@ -173,15 +163,4 @@ void wifiStart(void) {
     ESP_ERROR_CHECK(esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler));
     vEventGroupDelete(s_wifi_event_group);
 
-    uint8_t macAdd[8] = {0};
-    int err2 = esp_wifi_get_mac(WIFI_MODE_STA, *macAdd);
-
-    printf("Errore mac address: %d\n", err2);
-
-    printf("MAC: ");
-    for(int i = 0; i < 8; i++) {
-        printf("%d ", macAdd[i]);
-    }
-
-    puts("");
 }
