@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-extern void jsonFunction(void);
+extern char * jsonFunction(void);
 
 #ifdef __cplusplus
 }

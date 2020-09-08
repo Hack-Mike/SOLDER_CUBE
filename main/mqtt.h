@@ -11,7 +11,7 @@
 
 static const char *mqttTAG = "MQTT: ";
 
-void mqtt_app(void);
+void mqttStart(void);
 
 void publish(char *topic, char *message);
 

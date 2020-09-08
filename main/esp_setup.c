@@ -25,8 +25,8 @@
 
 #include "driver/gpio.h"
 
-extern EventGroupHandle_t connectionEvent;
-extern EventBits_t connectionBits;
+EventGroupHandle_t connectionEventBits;
+//EventBits_t connectionBits = 0;
 
 char serialNumber[15];
 
@@ -108,10 +108,11 @@ void espSetup(void) {
         printf("Failed to get serial number. Err: %d\n", err);
     }
 
-    connectionEvent = xEventGroupCreate();
-    if(connectionEvent != NULL) {
+    connectionEventBits = xEventGroupCreate();
+    if(connectionEventBits != NULL) {
         puts("Connection Event created!");
     }
 
     tcpip_adapter_init();
+
 }

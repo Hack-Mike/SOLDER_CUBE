@@ -24,7 +24,7 @@
 #include "ethernet.h"
 #include "button.h"
 #include "JsonUtility.hpp"
-
+#include "mqtt.h"
 
 
 
@@ -33,15 +33,30 @@
 
 
 EventGroupHandle_t connectionEvent = NULL;
-EventBits_t connectionBits = 0;
+
+extern EventGroupHandle_t connectionEventBits;
+
 extern EventGroupHandle_t buttonEvent;
 extern EventBits_t buttonBits;
 
+static void displayBits(unsigned int value) {
+    unsigned int displayMask = 1 << 31;
 
-#define ETH_BIT (1UL << 0UL)
+    printf("DEC to BIN %u = ", value);
+
+    for(unsigned int c = 1; c <= 32; ++c) {
+        putchar(value & displayMask ? '1' : '0');
+        //printf("%s", value & displayMask ? "1" : "0");
+        value <<= 1;
+
+        if(c % 8 == 0) {
+            printf(" ");
+        }
+    }
+    puts("");
+}
 
 void connectionTask(void) {
-
 
     while(1) {
 
@@ -50,13 +65,12 @@ void connectionTask(void) {
         vTaskDelay(pdMS_TO_TICKS(1000));
 
         if(buttonBits & BUTTON_BIT_0) {
-            ethernetStart();
             wifiStop();
+            ethernetStart();
         } else if(buttonBits & BUTTON_BIT_1) {
             ethernetStop();
             wifiStart();
         }
-
 
         vTaskDelay(1);
     }
@@ -72,10 +86,24 @@ void app_main() {
     ethernetSetup();
     wifi_init_sta();
 
-    jsonFunction();
+    vTaskDelay(pdMS_TO_TICKS(5000));
+    wifiStart();
+
+    vTaskDelay(pdMS_TO_TICKS(5000));
+
+    //mqttStart();
+
+    //vTaskDelay(pdMS_TO_TICKS(5000));
+
+
+    //char *msg = jsonFunction();
+
+    //publish("/private/topic00", msg);
 
 
     //xTaskCreate(ethernetSetup, "ETHERNET", 4000, NULL, 5, NULL);
+
+    puts("Ready to decide connection method. 1-ETHERNET 2-WIFI");
     xTaskCreate(buttonTask, "BUTTON", 4000, NULL, 5, NULL);
     xTaskCreate(connectionTask, "CONN", 4000, NULL, 5, NULL);
 

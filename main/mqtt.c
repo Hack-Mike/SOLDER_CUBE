@@ -34,16 +34,7 @@ esp_mqtt_client_handle_t client;
 extern const uint8_t mqtt_eclipse_org_pem_start[] asm("_binary_mqtt_eclipse_org_pem_start");
 extern const uint8_t mqtt_eclipse_org_pem_end[] asm("_binary_mqtt_eclipse_org_pem_end");
 
-//extern const uint8_t cert_chain_pem_start[] asm("_binary_chain_pem_start");
-//extern const uint8_t cert_chain_pem_end[] asm("_binary_chain_pem_end");
-
-//extern const uint8_t esseci_pem_start[] asm("_binary_esseci_pem_start");
-//extern const uint8_t esseci_pem_end[] asm("_binary_esseci_pem_end");
-
-//extern const uint8_t esseci_der_der_start[] asm("_binary_esseci_der_der_start");
-//extern const uint8_t esseci_der_der_end[] asm("_binary_esseci_der_der_end");
-
-char topicMsg[128];
+static char topicMsg[128];
 char topicName[50];
 
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
@@ -129,40 +120,20 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     mqtt_event_handler_cb(event_data);
 }
 
-void mqtt_app(void)
+void mqttStart(void)
 {
 
 
     esp_mqtt_client_config_t mqtt_cfg = {
 
-            //.uri= "mqtts://test.mosquitto.org:8884"
-            //.uri = "mqtts://mqtt.eclipse.org:8883",
-            .uri = "mqtt://mqtt.eclipse.org:1883"
-            //.client_id = "QBO_1",
-            //.host = "esseci-staging.crispybacon.us",
-            //.port = 8443,
-
-            //.uri = "mqtts://esseci-staging.crispybacon.us:8443",
-
-            //.cert_pem = (const char *)mqtt_eclipse_org_pem_start,
-            //.cert_pem = (const char *)cert_chain_pem_start,
-            //.cert_pem = (const char *)esseci_pem_start,
-
-            //.cert_pem = (const char *)esseci_der_der_start,
-            //.cert_len = esseci_pem_end - esseci_pem_start,
-
+            .uri = "mqtts://mqtt.eclipse.org:8883",
+            //.uri = "mqtt://mqtt.eclipse.org:1883"
 
 
     };
 
-    puts("DEBUG 1");
+
     client = esp_mqtt_client_init(&mqtt_cfg);
-
-    puts("DEBUG 2");
-
-
-
-    puts("DEBUG 3");
 
     esp_err_t connection = ESP_FAIL;
 
@@ -176,7 +147,6 @@ void mqtt_app(void)
 
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, client);
 
-    puts("DEBUG 4");
 }
 void subscribe(char *topic) {
     esp_mqtt_client_subscribe(client, topic, 0);
@@ -187,32 +157,3 @@ void publish(char *topic, char *message) {
     //int response = esp_mqtt_client_publish(client, "/private/topic/00", "data_3", 0, 1, 0);
     ESP_LOGI(mqttTAG, "message publish on topic" );
 }
-
-
-/*
-void app_main()
-{
-    ESP_LOGI(mqttTAG, "[APP] Startup..");
-    ESP_LOGI(mqttTAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
-    ESP_LOGI(mqttTAG, "[APP] IDF version: %s", esp_get_idf_version());
-
-    esp_log_level_set("*", ESP_LOG_INFO);
-    esp_log_level_set("MQTT_CLIENT", ESP_LOG_VERBOSE);
-    esp_log_level_set("MQTT_EXAMPLE", ESP_LOG_VERBOSE);
-    esp_log_level_set("TRANSPORT_TCP", ESP_LOG_VERBOSE);
-    esp_log_level_set("TRANSPORT_SSL", ESP_LOG_VERBOSE);
-    esp_log_level_set("TRANSPORT", ESP_LOG_VERBOSE);
-    esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
-
-    ESP_ERROR_CHECK(nvs_flash_init());
-    tcpip_adapter_init();
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-
-    * This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
-     * Read "Establishing Wi-Fi or Ethernet Connection" section in
-     * examples/protocols/README.md for more information about this function.
-     *
-    ESP_ERROR_CHECK(example_connect());
-
-    mqtt_app_start();
-} */

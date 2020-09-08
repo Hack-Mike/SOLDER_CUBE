@@ -6,9 +6,11 @@
 #include <ArduinoJson.h>
 #include "JsonUtility.hpp"
 
+#include "mqtt.h"
+
 char bufferSize[200];
 
-void jsonFunction(void) {
+char * jsonFunction(void) {
 
     const size_t capacity = JSON_OBJECT_SIZE(3);
     DynamicJsonDocument doc(capacity);
@@ -21,4 +23,7 @@ void jsonFunction(void) {
 
     printf("Print Json -> %s\n", bufferSize);
 
+    return bufferSize;
+
 }
+
